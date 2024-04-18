@@ -1,10 +1,10 @@
-// AddNote.js
+// EditNote.js
 import React, { useState } from 'react';
 import { BiImageAdd } from 'react-icons/bi';
 
-const AddNote = ({ handleAddNote }) => {
-  const [title, setTitle] = useState('');
-  const [text, setText] = useState('');
+const EditNote = ({ id, initialTitle, initialText, handleEditNote, handleDeleteNote }) => {
+  const [title, setTitle] = useState(initialTitle);
+  const [text, setText] = useState(initialText);
   const [image, setImage] = useState(null); // State to store the uploaded image
 
   const handleChangeTitle = (event) => {
@@ -21,15 +21,10 @@ const AddNote = ({ handleAddNote }) => {
   };
 
   const handleSaveClick = () => {
-    if (text.trim().length > 0 || image) {
-      handleAddNote({
-        title: title.trim() || 'Untitled',
-        text: text.trim(),
-        image: image, // Pass the image to the handleAddNote function
-      });
-      setTitle('');
-      setText('');
-      setImage(null); // Reset the image state after saving
+    if (title.trim() === '' && text.trim() === '') {
+      handleDeleteNote(id);
+    } else {
+      handleEditNote(id, title, text, image); // Pass the image to the handleEditNote function
     }
   };
 
@@ -38,18 +33,16 @@ const AddNote = ({ handleAddNote }) => {
   };
 
   return (
-    <div className="note new">
+    <div className="note edit">
       <div className="note-inputs">
         <input
           type="text"
-          placeholder="Title (optional)"
           value={title}
           onChange={handleChangeTitle}
         />
         <textarea
           rows="8"
           cols="10"
-          placeholder="Type to add a note..."
           value={text}
           onChange={handleChangeText}
         ></textarea>
@@ -82,4 +75,4 @@ const AddNote = ({ handleAddNote }) => {
   );
 };
 
-export default AddNote;
+export default EditNote;

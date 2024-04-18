@@ -1,3 +1,4 @@
+// App.js
 import React, { useEffect, useState } from 'react';
 import NotesList from './components/NotesList';
 import Search from './components/Search';
@@ -11,47 +12,26 @@ const App = () => {
       title: 'First Note',
       text: 'This is my first note!',
       date: '4/17/2024',
+      pinned: false,
     },
-    {
-      id: nanoid(),
-      title: 'Second Note',
-      text: 'This is my second note!',
-      date: '5/17/2024',
-    },
-    {
-      id: nanoid(),
-      title: 'Third Note',
-      text: 'This is my third note!',
-      date: '6/17/2024',
-    },
-    {
-      id: nanoid(),
-      title: 'Fourth Note',
-      text: 'This is my new note!',
-      date: '7/17/2024',
-    }
+    // Add more initial notes as needed
   ]);
 
   const [searchText, setSearchText] = useState('');
-
   const [darkMode, setDarkMode] = useState(false);
+  const [editingNoteId, setEditingNoteId] = useState(null);
 
   useEffect(() => {
-		const savedNotes = JSON.parse(
-			localStorage.getItem('react-notes-app-data')
-		);
+    const savedNotes = JSON.parse(localStorage.getItem('react-notes-app-data'));
 
-		if (savedNotes) {
-			setNotes(savedNotes);
-		}
-	}, []);
+    if (savedNotes) {
+      setNotes(savedNotes);
+    }
+  }, []);
 
-	useEffect(() => {
-		localStorage.setItem(
-			'react-notes-app-data',
-			JSON.stringify(notes)
-		);
-	}, [notes]);
+  useEffect(() => {
+    localStorage.setItem('react-notes-app-data', JSON.stringify(notes));
+  }, [notes]);
 
   const addNote = ({ title, text }) => {
     const date = new Date();
@@ -59,38 +39,76 @@ const App = () => {
       id: nanoid(),
       title: title || 'Untitled',
       text: text,
-      date: date.toLocaleDateString()
-    }
+      date: date.toLocaleDateString(),
+      pinned: false,
+    };
     const newNotes = [...notes, newNote];
     setNotes(newNotes);
-  }
+  };
 
   const deleteNote = (id) => {
     const newNotes = notes.filter((note) => note.id !== id);
     setNotes(newNotes);
-  }
+  };
 
-  // const searchNotes = (searchText) => {
-  //   const filteredNotes = notes.filter((note) =>
-  //     note.title.toLowerCase().includes(searchText.toLowerCase()) ||
-  //     note.text.toLowerCase().includes(searchText.toLowerCase())
-  //   );
-  //   setNotes(filteredNotes);
-  // };
+  const handleEditNote = (id, title, text) => {
+    const updatedNotes = notes.map((note) => {
+      if (note.id === id) {
+        return {
+          ...note,
+          title: title,
+          text: text,
+        };
+      }
+      return note;
+    });
+
+    setNotes(updatedNotes);
+    setEditingNoteId(null); // Reset editing mode
+  };
+
+  const handlePinNote = (id) => {
+    const updatedNotes = notes.map((note) => {
+      if (note.id === id) {
+        return {
+          ...note,
+          pinned: !note.pinned,
+        };
+      }
+      return note;
+    });
+  
+    const pinnedNote = updatedNotes.find((note) => note.id === id);
+    const unpinnedNotes = updatedNotes.filter((note) => note.id !== id);
+  
+    if (pinnedNote.pinned) {
+      setNotes([pinnedNote, ...unpinnedNotes]);
+    } else {
+      setNotes([...unpinnedNotes, pinnedNote]);
+    }
+  };
+  
 
   return (
     <div className={`${darkMode && 'dark-mode'}`}>
       <div className="container">
-        <Header handleToggleDarkMode={setDarkMode}/>
+        <Header handleToggleDarkMode={setDarkMode} />
         <Search handleSearchNote={setSearchText} />
         <NotesList
-          notes={notes.filter((note)=> note.text.toLowerCase().includes(searchText)||note.title.toLowerCase().includes(searchText.toLowerCase()))}
+          notes={notes.filter(
+            (note) =>
+              note.text.toLowerCase().includes(searchText) ||
+              note.title.toLowerCase().includes(searchText.toLowerCase())
+          )}
           handleAddNote={addNote}
           handleDeleteNote={deleteNote}
+          handleEditNote={handleEditNote}
+          editingNoteId={editingNoteId}
+          setEditingNoteId={setEditingNoteId}
+          handlePinNote={handlePinNote}
         />
       </div>
     </div>
-    
   );
 };
 
